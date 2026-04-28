@@ -38,8 +38,22 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
 
   return (
     <div className="overflow-auto">
-      <div className="relative mx-auto w-[1578px] font-sans text-black" style={{ aspectRatio: "1578 / 997" }}>
-        <img src={receiptTemplate} alt="Consignment receipt template" className="h-full w-full select-none object-contain" draggable={false} />
+      <div
+        className="relative mx-auto font-sans text-black"
+        style={{
+          width: "min(100%, 900px)",
+          aspectRatio: "1578 / 997",
+        }}
+      >
+        <div
+          className="absolute left-0 top-0 origin-top-left"
+          style={{
+            width: "1578px",
+            height: "997px",
+            transform: "scale(calc(min(100%, 900px) / 1578px))",
+          }}
+        >
+        <img src={receiptTemplate} alt="Consignment receipt template" className="absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
 
         <FillText className="left-[288px] top-[198px] w-[460px] text-[17px] font-semibold tracking-[0.2px]" value={text.billNo} />
         <FillText className="left-[284px] top-[278px] w-[464px] text-[17px] font-semibold" value={text.startDate} />
