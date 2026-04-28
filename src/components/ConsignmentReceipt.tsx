@@ -6,6 +6,10 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
   const isYiwu = (c.start_station || "").toLowerCase().includes("yiwu");
   const stationLabel = isGuangzhou ? "Guangzhou" : isYiwu ? "Yiwu" : c.start_station;
   const receivedBy = isGuangzhou ? "Ken Guangzhou" : isYiwu ? "Yiwu Su" : "";
+
+  const totalAmountNum = Number(c.grand_total || 0);
+  const totalInWords = numberToWords(totalAmountNum);
+
   const text = {
     billNo: c.bill_no || "",
     startDate: c.start_date || "",
@@ -28,6 +32,7 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
     billCharge: formatAmount(c.bill_charge),
     advance: formatAmount(c.advance_amount),
     total: formatAmount(c.grand_total),
+    totalWords: totalInWords,
     freightOnDelivery: formatAmount(c.payment_of_goods),
     tradeMode: c.trade_mode || "",
     remarks: c.remarks || "",
@@ -67,10 +72,13 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
           <FillText className="left-[284px] top-[290px] w-[464px] text-[17px] font-semibold" value={text.startDate} />
           <FillText className="left-[286px] top-[369px] w-[463px] text-[17px] font-semibold" value={text.marka} />
 
+          {/* Starting station — green */}
           <FillText className="left-[1062px] top-[210px] w-[493px] text-[24px] font-bold text-[#2ea24f]" value={text.station} />
-          <FillText className="left-[1061px] top-[290px] w-[495px] text-[19px] font-semibold" value={text.destination} />
+          {/* Destination — red */}
+          <FillText className="left-[1061px] top-[290px] w-[495px] text-[20px] font-bold text-[#e11d1d]" value={text.destination} />
           <FillText className="left-[1061px] top-[369px] w-[495px] text-[18px] font-semibold" value={text.phone} />
 
+          {/* Goods row */}
           <FillText className="left-[4px] top-[522px] w-[274px] text-[17px] font-semibold" value={text.description} />
           <FillText className="left-[278px] top-[522px] w-[101px] text-[17px] font-semibold" value={text.packageType} />
           <FillText className="left-[379px] top-[522px] w-[110px] text-[17px] font-semibold" value={text.quantity} />
@@ -84,16 +92,30 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
           <FillText className="left-[1321px] top-[522px] w-[99px] text-[17px] font-semibold" value={text.freight} />
           <FillText className="left-[1420px] top-[522px] w-[157px] text-[17px] font-semibold" value={text.localFreight} />
 
-          <FillText className="left-[0px] top-[632px] w-[278px] text-[17px] font-semibold" value={text.valueOfGoods} />
-          <FillText className="left-[278px] top-[632px] w-[212px] text-[17px] font-semibold" value={text.insurance} />
-          <FillText className="left-[490px] top-[632px] w-[264px] text-[17px] font-semibold" value={text.billCharge} />
-          <FillText className="left-[754px] top-[632px] w-[301px] text-[17px] font-semibold" value={text.advance} />
-          <FillText className="left-[1055px] top-[632px] w-[152px] text-[18px] font-bold" value={text.total} />
-          <FillText className="left-[1207px] top-[632px] w-[214px] text-[17px] font-semibold" value={text.freightOnDelivery} />
-          <FillText className="left-[1421px] top-[632px] w-[157px] text-[17px] font-semibold" value={text.tradeMode} />
+          {/* Money row — column boundaries: 0,277,488,752,1055,1206,1421,1576 */}
+          <FillText className="left-[0px] top-[632px] w-[277px] text-[17px] font-semibold" value={text.valueOfGoods} />
+          <FillText className="left-[277px] top-[632px] w-[211px] text-[17px] font-semibold" value={text.insurance} />
+          <FillText className="left-[488px] top-[632px] w-[264px] text-[17px] font-semibold" value={text.billCharge} />
+          <FillText className="left-[752px] top-[632px] w-[303px] text-[17px] font-semibold" value={text.advance} />
+          {/* TOTAL AMOUNT — red */}
+          <FillText className="left-[1055px] top-[632px] w-[151px] text-[18px] font-bold text-[#e11d1d]" value={text.total} />
+          <FillText className="left-[1206px] top-[632px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
+          <FillText className="left-[1421px] top-[632px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
+
+          {/* Total amount in words — left-aligned, fills the long row */}
+          {text.totalWords && (
+            <div className="absolute left-[280px] top-[688px] w-[1290px] text-[16px] font-semibold text-left leading-none">
+              {text.totalWords}
+            </div>
+          )}
 
           <FillText className="left-[279px] top-[713px] w-[777px] text-[16px] font-semibold leading-[1.15]" value={text.remarks} />
-          <FillText className="left-[1205px] top-[713px] w-[373px] text-[18px] font-medium" value={text.signature} />
+          <FillText className="left-[1205px] top-[745px] w-[373px] text-[18px] font-medium" value={text.signature} />
+
+          {/* Missing right-side bottom border under signature box (template ends at x=1204) */}
+          <div className="absolute left-[1204px] top-[736px] h-[2px] w-[374px] bg-black" />
+          {/* Right-edge vertical border continuation for the signature box */}
+          <div className="absolute left-[1576px] top-[684px] h-[54px] w-[2px] bg-black" />
         </div>
       </div>
     </div>
@@ -110,4 +132,54 @@ function formatAmount(value: number | string | null | undefined) {
   const numericValue = Number(value);
   if (Number.isNaN(numericValue)) return String(value);
   return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(2);
+}
+
+// Convert a number to English words (supports decimals as "and XX/100").
+function numberToWords(num: number): string {
+  if (!isFinite(num) || num === 0) return "";
+  const negative = num < 0;
+  const n = Math.abs(num);
+  const whole = Math.floor(n);
+  const cents = Math.round((n - whole) * 100);
+
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+  function under1000(x: number): string {
+    let s = "";
+    if (x >= 100) {
+      s += ones[Math.floor(x / 100)] + " Hundred";
+      x %= 100;
+      if (x) s += " ";
+    }
+    if (x >= 20) {
+      s += tens[Math.floor(x / 10)];
+      if (x % 10) s += "-" + ones[x % 10];
+    } else if (x > 0) {
+      s += ones[x];
+    }
+    return s;
+  }
+
+  function toWords(x: number): string {
+    if (x === 0) return "Zero";
+    const units = ["", "Thousand", "Million", "Billion"];
+    let i = 0;
+    let result = "";
+    while (x > 0) {
+      const chunk = x % 1000;
+      if (chunk) {
+        result = under1000(chunk) + (units[i] ? " " + units[i] : "") + (result ? " " + result : "");
+      }
+      x = Math.floor(x / 1000);
+      i++;
+    }
+    return result;
+  }
+
+  let words = toWords(whole);
+  if (cents > 0) words += ` and ${cents}/100`;
+  words += " Only";
+  return (negative ? "Negative " : "") + words;
 }
