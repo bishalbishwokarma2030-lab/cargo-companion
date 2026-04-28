@@ -85,7 +85,7 @@ function ConsignmentsPage() {
       </Dialog>
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="max-w-[98vw] max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4">
           <DialogHeader>
             <div className="flex items-center justify-between pr-6">
               <DialogTitle>Consignment Receipt</DialogTitle>
