@@ -10,6 +10,17 @@ import { api, Consignment, Station } from "@/lib/store";
 
 const START_STATIONS = ["Guangzhou", "Yiwu", "Lhasa", "Nylam"];
 const END_STATIONS = ["Tatopani", "Kerung", "Tatopani - Kerung", "Kerung - Tatopani", "Nylam (Khasa)"];
+const END_STATION_ALIASES: Record<string, string[]> = {
+  "nylam khasa": ["nylam"],
+};
+
+const normalizeStationName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const initial = {
   bill_no: "", marka: "", start_station: "", end_station: "",
@@ -28,7 +39,16 @@ const initial = {
 export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialData?: Consignment | null; onSaved: () => void; onCancel: () => void }) {
   const [stations, setStations] = useState<Station[]>([]);
   const [tab, setTab] = useState("basic");
-  const [form, setForm] = useState<any>(initialData ? { ...initialData, expected_delivery_date: initialData.expected_delivery_date || "" } : initial);
+  const [form, setForm] = useState<any>(() =>
+    initialData
+      ? {
+          ...initial,
+          ...initialData,
+          expected_delivery_date: initialData.expected_delivery_date || "",
+          calculation_factor: initialData.calculation_factor || "Select",
+        }
+      : initial
+  );
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
   useEffect(() => { api.stations.list().then(setStations).catch(() => {}); }, []);
@@ -37,32 +57,33 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
   const insurance = useMemo(() => Number(form.value_of_goods || 0) * 0.0003, [form.value_of_goods]);
 
   // Find end station rates
-  const endStationData = useMemo(
-    () => stations.find((s) => s.name.toLowerCase() === String(form.end_station || "").toLowerCase()),
-    [stations, form.end_station]
-  );
+  const endStationData = useMemo(() => {
+    const normalizedEndStation = normalizeStationName(String(form.end_station || ""));
+    if (!normalizedEndStation) return null;
 
-  // Auto-calc freight from end station rate × CBM/Weight based on factor
-  const autoFreight = useMemo(() => {
-    if (!endStationData) return null;
-    if (form.calculation_factor === "CBM") return Number(endStationData.cbm_rate || 0) * Number(form.cbm || 0);
-    if (form.calculation_factor === "Weight") return Number(endStationData.weight_rate || 0) * Number(form.weight || 0);
-    return null;
-  }, [endStationData, form.calculation_factor, form.cbm, form.weight]);
+    const allowedNames = [normalizedEndStation, ...(END_STATION_ALIASES[normalizedEndStation] || [])];
+    return stations.find((station) => allowedNames.includes(normalizeStationName(station.name))) || null;
+  }, [stations, form.end_station]);
 
-  useEffect(() => {
-    if (autoFreight !== null) {
-      setForm((f: any) => ({ ...f, freight: autoFreight, calculation_rate: form.calculation_factor === "CBM" ? Number(endStationData?.cbm_rate || 0) : Number(endStationData?.weight_rate || 0) }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoFreight]);
+  const calculatedRate = useMemo(() => {
+    if (!endStationData || form.calculation_factor === "Select") return 0;
+    if (form.calculation_factor === "CBM") return Number(endStationData.cbm_rate || 0);
+    if (form.calculation_factor === "Weight") return Number(endStationData.weight_rate || 0);
+    return 0;
+  }, [endStationData, form.calculation_factor]);
+
+  const calculatedFreight = useMemo(() => {
+    if (form.calculation_factor === "CBM") return calculatedRate * Number(form.cbm || 0);
+    if (form.calculation_factor === "Weight") return calculatedRate * Number(form.weight || 0);
+    return 0;
+  }, [calculatedRate, form.calculation_factor, form.cbm, form.weight]);
 
   const calcAmount = 0; // freight already accounts for the rate × base
 
   const subTotal = useMemo(() => {
-    return ["packaging_fee","tax","freight","local_freight","bill_charge","loading_fee","unloading_fee"]
-      .reduce((s, k) => s + Number(form[k] || 0), 0) + insurance + calcAmount;
-  }, [form, insurance]);
+    return ["packaging_fee", "tax", "local_freight", "bill_charge", "loading_fee", "unloading_fee"]
+      .reduce((s, k) => s + Number(form[k] || 0), 0) + insurance + calcAmount + calculatedFreight;
+  }, [form, insurance, calculatedFreight]);
 
   const advanceAmount = Number(form.goods_advance || 0) + Number(form.payment_amount || 0);
   const grandTotal = subTotal - advanceAmount;
@@ -80,11 +101,11 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
       start_date: form.start_date || new Date().toISOString().slice(0, 10),
       expected_delivery_date: form.expected_delivery_date || null,
       cbm: Number(form.cbm || 0), weight: Number(form.weight || 0), quantity: Number(form.quantity || 0), cartoon: Number(form.cartoon || 0),
-      packaging_fee: Number(form.packaging_fee || 0), tax: Number(form.tax || 0), freight: Number(form.freight || 0),
+      packaging_fee: Number(form.packaging_fee || 0), tax: Number(form.tax || 0), freight: Number(calculatedFreight || 0),
       local_freight: Number(form.local_freight || 0), bill_charge: Number(form.bill_charge || 0), loading_fee: Number(form.loading_fee || 0),
       payment_of_goods: Number(form.payment_of_goods || 0), goods_advance: Number(form.goods_advance || 0),
       unloading_fee: Number(form.unloading_fee || 0), value_of_goods: Number(form.value_of_goods || 0),
-      payment_amount: Number(form.payment_amount || 0), calculation_rate: Number(form.calculation_rate || 0),
+      payment_amount: Number(form.payment_amount || 0), calculation_rate: Number(calculatedRate || 0),
       calculation_factor: form.calculation_factor === "Select" ? null : form.calculation_factor,
       insurance, sub_total: subTotal, advance_amount: advanceAmount, grand_total: grandTotal,
       current_station: form.current_station || form.start_station || null,
@@ -171,10 +192,10 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
               </Select>
             </F>
             <F label="Calculation Rate (auto from station)">
-              <Input type="number" value={Number(form.calculation_rate || 0)} readOnly className="bg-muted" />
+              <Input type="number" value={calculatedRate} readOnly className="bg-muted" />
             </F>
             <F label="Freight (auto: rate × CBM/Weight)">
-              <Input type="number" value={Number(form.freight || 0)} readOnly className="bg-muted" />
+              <Input type="number" value={calculatedFreight} readOnly className="bg-muted" />
             </F>
             <F label="Packaging Fee"><Input type="number" value={form.packaging_fee} onChange={(e) => set("packaging_fee", e.target.value)} /></F>
             <F label="TAX"><Input type="number" value={form.tax} onChange={(e) => set("tax", e.target.value)} /></F>
