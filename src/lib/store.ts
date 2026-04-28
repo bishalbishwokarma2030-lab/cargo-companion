@@ -51,6 +51,8 @@ export type Consignment = {
   advance_amount: number;
   grand_total: number;
   status: string;
+  payment_status: string | null;
+  current_station: string | null;
   created_at: string;
   updated_at: string;
 };

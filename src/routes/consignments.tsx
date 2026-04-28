@@ -49,15 +49,29 @@ function ConsignmentsPage() {
         <DataTable<Consignment>
           data={filtered}
           columns={[
-            { key: "#", header: "#", render: (_r, i) => <span className="text-muted-foreground">{i + 1}</span> },
-            { key: "bill_no", header: "Bill No.", render: (r) => <Badge variant="secondary" className="bg-primary/10 text-primary">{r.bill_no}</Badge> },
-            { key: "marka", header: "Marka", render: (r) => <span className="font-medium">{r.marka}</span> },
-            { key: "client", header: "Client", render: (r) => r.client_name || "—" },
-            { key: "route", header: "Route", render: (r) => <span className="text-xs"><Badge variant="outline">{r.start_station}</Badge> → <Badge variant="outline">{r.end_station}</Badge></span> },
+            { key: "date", header: "Date", render: (r) => <span className="text-xs">{new Date(r.start_date).toLocaleDateString()}</span> },
+            { key: "bill_no", header: "Consignment No.", render: (r) => <Badge variant="secondary" className="bg-primary/10 text-primary">{r.bill_no}</Badge> },
+            { key: "marka", header: "Marka", render: (r) => <span className="font-medium">{r.marka || "—"}</span> },
             { key: "cbm", header: "CBM" },
             { key: "weight", header: "Weight" },
+            { key: "cartoon", header: "Cartoon" },
+            { key: "quantity", header: "Quantity" },
+            { key: "client", header: "Client", render: (r) => r.client_name || "—" },
             { key: "grand_total", header: "Total", render: (r) => <span className="font-semibold">¥ {Number(r.grand_total).toFixed(2)}</span> },
-            { key: "created_at", header: "Created", render: (r) => <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span> },
+            { key: "dues", header: "Dues", render: (r) => {
+              const dues = Number(r.grand_total || 0) - Number(r.advance_amount || 0);
+              return <span className={dues > 0 ? "text-destructive font-medium" : "text-muted-foreground"}>¥ {dues.toFixed(2)}</span>;
+            }},
+            { key: "status", header: "Status", render: (r) => <Badge variant="outline">{r.status}</Badge> },
+            { key: "payment_status", header: "Payment", render: (r) => {
+              const ps = r.payment_status || "Unpaid";
+              const cls = ps === "Paid" ? "bg-primary/15 text-primary" : ps === "Partial" ? "bg-amber-500/15 text-amber-600" : "bg-destructive/10 text-destructive";
+              return <Badge variant="secondary" className={cls}>{ps}</Badge>;
+            }},
+            { key: "description", header: "Description", render: (r) => <span className="text-xs text-muted-foreground line-clamp-1 max-w-[160px] inline-block">{r.description || "—"}</span> },
+            { key: "start_station", header: "Start Station", render: (r) => <Badge variant="outline">{r.start_station || "—"}</Badge> },
+            { key: "current_station", header: "Current At", render: (r) => <Badge variant="outline" className="bg-accent/40">{r.current_station || r.start_station || "—"}</Badge> },
+            { key: "end_station", header: "End Station", render: (r) => <Badge variant="outline">{r.end_station || "—"}</Badge> },
             { key: "actions", header: "Actions", render: (r) => <ActionButtons onView={() => setViewing(r)} onEdit={() => { setEditing(r); setFormOpen(true); }} onDelete={() => remove(r)} /> },
           ]}
         />

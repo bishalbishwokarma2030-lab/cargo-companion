@@ -8,6 +8,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { api, Consignment, Station } from "@/lib/store";
 
+const START_STATIONS = ["Guangzhou", "Yiwu", "Lhasa", "Nylam"];
+const END_STATIONS = ["Tatopani", "Kerung", "Tatopani - Kerung", "Kerung - Tatopani", "Nylam (Khasa)"];
+
 const initial = {
   bill_no: "", marka: "", start_station: "", end_station: "",
   start_date: new Date().toISOString().slice(0, 10), expected_delivery_date: "",
@@ -18,7 +21,8 @@ const initial = {
   packaging_fee: 0, tax: 0, freight: 0, local_freight: 0,
   bill_charge: 10, loading_fee: 0, payment_of_goods: 0,
   goods_advance: 0, unloading_fee: 0, value_of_goods: 0, payment_amount: 0,
-  calculation_factor: "CBM", calculation_rate: 0,
+  calculation_factor: "Select", calculation_rate: 0,
+  payment_status: "Unpaid", current_station: "",
 };
 
 export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialData?: Consignment | null; onSaved: () => void; onCancel: () => void }) {
@@ -32,35 +36,58 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
   // Auto-calculate insurance = 0.03% of value of goods
   const insurance = useMemo(() => Number(form.value_of_goods || 0) * 0.0003, [form.value_of_goods]);
 
-  // Calculation: rate * (cbm or weight)
-  const calcAmount = useMemo(() => {
-    const rate = Number(form.calculation_rate || 0);
-    const base = form.calculation_factor === "Weight" ? Number(form.weight || 0) : Number(form.cbm || 0);
-    return rate * base;
-  }, [form.calculation_factor, form.calculation_rate, form.cbm, form.weight]);
+  // Find end station rates
+  const endStationData = useMemo(
+    () => stations.find((s) => s.name.toLowerCase() === String(form.end_station || "").toLowerCase()),
+    [stations, form.end_station]
+  );
+
+  // Auto-calc freight from end station rate × CBM/Weight based on factor
+  const autoFreight = useMemo(() => {
+    if (!endStationData) return null;
+    if (form.calculation_factor === "CBM") return Number(endStationData.cbm_rate || 0) * Number(form.cbm || 0);
+    if (form.calculation_factor === "Weight") return Number(endStationData.weight_rate || 0) * Number(form.weight || 0);
+    return null;
+  }, [endStationData, form.calculation_factor, form.cbm, form.weight]);
+
+  useEffect(() => {
+    if (autoFreight !== null) {
+      setForm((f: any) => ({ ...f, freight: autoFreight, calculation_rate: form.calculation_factor === "CBM" ? Number(endStationData?.cbm_rate || 0) : Number(endStationData?.weight_rate || 0) }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFreight]);
+
+  const calcAmount = 0; // freight already accounts for the rate × base
 
   const subTotal = useMemo(() => {
     return ["packaging_fee","tax","freight","local_freight","bill_charge","loading_fee","unloading_fee"]
       .reduce((s, k) => s + Number(form[k] || 0), 0) + insurance + calcAmount;
-  }, [form, insurance, calcAmount]);
+  }, [form, insurance]);
 
   const advanceAmount = Number(form.goods_advance || 0) + Number(form.payment_amount || 0);
   const grandTotal = subTotal - advanceAmount;
 
   const save = async () => {
-    if (!form.bill_no || !form.marka || !form.start_station || !form.end_station || !form.start_date) {
-      toast.error("Fill all required fields in Basic Details"); setTab("basic"); return;
+    // Only bill_no is required (start_date defaults to today)
+    if (!form.bill_no) {
+      toast.error("Bill No. is required"); setTab("basic"); return;
     }
     const payload: any = {
       ...form,
+      start_station: form.start_station || "",
+      end_station: form.end_station || "",
+      marka: form.marka || "",
+      start_date: form.start_date || new Date().toISOString().slice(0, 10),
       expected_delivery_date: form.expected_delivery_date || null,
-      cbm: Number(form.cbm), weight: Number(form.weight), quantity: Number(form.quantity), cartoon: Number(form.cartoon),
-      packaging_fee: Number(form.packaging_fee), tax: Number(form.tax), freight: Number(form.freight),
-      local_freight: Number(form.local_freight), bill_charge: Number(form.bill_charge), loading_fee: Number(form.loading_fee),
-      payment_of_goods: Number(form.payment_of_goods), goods_advance: Number(form.goods_advance),
-      unloading_fee: Number(form.unloading_fee), value_of_goods: Number(form.value_of_goods),
-      payment_amount: Number(form.payment_amount), calculation_rate: Number(form.calculation_rate),
+      cbm: Number(form.cbm || 0), weight: Number(form.weight || 0), quantity: Number(form.quantity || 0), cartoon: Number(form.cartoon || 0),
+      packaging_fee: Number(form.packaging_fee || 0), tax: Number(form.tax || 0), freight: Number(form.freight || 0),
+      local_freight: Number(form.local_freight || 0), bill_charge: Number(form.bill_charge || 0), loading_fee: Number(form.loading_fee || 0),
+      payment_of_goods: Number(form.payment_of_goods || 0), goods_advance: Number(form.goods_advance || 0),
+      unloading_fee: Number(form.unloading_fee || 0), value_of_goods: Number(form.value_of_goods || 0),
+      payment_amount: Number(form.payment_amount || 0), calculation_rate: Number(form.calculation_rate || 0),
+      calculation_factor: form.calculation_factor === "Select" ? null : form.calculation_factor,
       insurance, sub_total: subTotal, advance_amount: advanceAmount, grand_total: grandTotal,
+      current_station: form.current_station || form.start_station || null,
     };
     try {
       if (initialData) { await api.consignments.update(initialData.id, payload); toast.success("Consignment updated"); }
@@ -83,7 +110,7 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
         <div className="grid gap-6 lg:grid-cols-2">
           <Section title="Basic Details">
             <F label="Bill No. *"><Input value={form.bill_no} onChange={(e) => set("bill_no", e.target.value)} placeholder="eg. 23" /></F>
-            <F label="Marka *"><Input value={form.marka} onChange={(e) => set("marka", e.target.value)} placeholder="Consignment marka here…" /></F>
+            <F label="Marka"><Input value={form.marka} onChange={(e) => set("marka", e.target.value)} placeholder="Consignment marka here…" /></F>
           </Section>
           <Section title="Client Details">
             <F label="Client"><Input value={form.client_name} onChange={(e) => set("client_name", e.target.value)} placeholder="Client name" /></F>
@@ -91,29 +118,29 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
           </Section>
 
           <Section title="Start Station">
-            <F label="Station *">
+            <F label="Station">
               <Select value={form.start_station} onValueChange={(v) => set("start_station", v)}>
-                <SelectTrigger><SelectValue placeholder="Choose any station" /></SelectTrigger>
-                <SelectContent>{stations.map((s) => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent>
+                <SelectTrigger><SelectValue placeholder="Choose start station" /></SelectTrigger>
+                <SelectContent>{START_STATIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </F>
-            <F label="Start Date *"><Input type="date" value={form.start_date} onChange={(e) => set("start_date", e.target.value)} /></F>
+            <F label="Start Date"><Input type="date" value={form.start_date} onChange={(e) => set("start_date", e.target.value)} /></F>
           </Section>
           <Section title="End Station">
-            <F label="Station *">
+            <F label="Station">
               <Select value={form.end_station} onValueChange={(v) => set("end_station", v)}>
-                <SelectTrigger><SelectValue placeholder="Choose any station" /></SelectTrigger>
-                <SelectContent>{stations.map((s) => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent>
+                <SelectTrigger><SelectValue placeholder="Choose end station" /></SelectTrigger>
+                <SelectContent>{END_STATIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </F>
             <F label="Expected Delivery Date"><Input type="date" value={form.expected_delivery_date} onChange={(e) => set("expected_delivery_date", e.target.value)} /></F>
           </Section>
 
           <Section title="Merchandise Details">
-            <F label="CBM *"><Input type="number" value={form.cbm} onChange={(e) => set("cbm", e.target.value)} /></F>
-            <F label="Weight *"><Input type="number" value={form.weight} onChange={(e) => set("weight", e.target.value)} /></F>
+            <F label="CBM"><Input type="number" value={form.cbm} onChange={(e) => set("cbm", e.target.value)} /></F>
+            <F label="Weight"><Input type="number" value={form.weight} onChange={(e) => set("weight", e.target.value)} /></F>
             <F label="CTN No."><Input value={form.ctn_no} onChange={(e) => set("ctn_no", e.target.value)} /></F>
-            <F label="Cartoon *"><Input type="number" value={form.cartoon} onChange={(e) => set("cartoon", e.target.value)} /></F>
+            <F label="Cartoon"><Input type="number" value={form.cartoon} onChange={(e) => set("cartoon", e.target.value)} /></F>
           </Section>
           <Section title="Additional">
             <F label="Quantity"><Input type="number" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} /></F>
@@ -133,34 +160,49 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
       <TabsContent value="charges" className="mt-4">
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-4">
-            <F label="Packaging Fee"><Input type="number" value={form.packaging_fee} onChange={(e) => set("packaging_fee", e.target.value)} /></F>
-            <F label="TAX"><Input type="number" value={form.tax} onChange={(e) => set("tax", e.target.value)} /></F>
-            <F label="Freight"><Input type="number" value={form.freight} onChange={(e) => set("freight", e.target.value)} /></F>
-            <F label="Local Freight"><Input type="number" value={form.local_freight} onChange={(e) => set("local_freight", e.target.value)} /></F>
-            <F label="Insurance (auto: 0.03% of Value of Goods)">
-              <Input type="number" value={insurance.toFixed(2)} readOnly className="bg-muted" />
-            </F>
-            <F label="Bill Charge"><Input type="number" value={form.bill_charge} onChange={(e) => set("bill_charge", e.target.value)} /></F>
-          </div>
-          <div className="space-y-4">
-            <F label="Loading Fee"><Input type="number" value={form.loading_fee} onChange={(e) => set("loading_fee", e.target.value)} /></F>
-            <F label="Payment of Goods"><Input type="number" value={form.payment_of_goods} onChange={(e) => set("payment_of_goods", e.target.value)} /></F>
-            <F label="Goods Advance"><Input type="number" value={form.goods_advance} onChange={(e) => set("goods_advance", e.target.value)} /></F>
-            <F label="Unloading Fee"><Input type="number" value={form.unloading_fee} onChange={(e) => set("unloading_fee", e.target.value)} /></F>
-            <F label="Value of Goods"><Input type="number" value={form.value_of_goods} onChange={(e) => set("value_of_goods", e.target.value)} /></F>
-            <F label="Payment Amount"><Input type="number" value={form.payment_amount} onChange={(e) => set("payment_amount", e.target.value)} /></F>
-          </div>
-          <div className="space-y-4">
-            <F label="Calculation Factor *">
+            <F label="Calculation Factor">
               <Select value={form.calculation_factor} onValueChange={(v) => set("calculation_factor", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="Select">Select</SelectItem>
                   <SelectItem value="CBM">CBM</SelectItem>
                   <SelectItem value="Weight">Weight</SelectItem>
                 </SelectContent>
               </Select>
             </F>
-            <F label="Calculation Rate *"><Input type="number" value={form.calculation_rate} onChange={(e) => set("calculation_rate", e.target.value)} /></F>
+            <F label="Calculation Rate (auto from station)">
+              <Input type="number" value={form.calculation_rate} onChange={(e) => set("calculation_rate", e.target.value)} />
+            </F>
+            <F label="Freight (auto: rate × CBM/Weight)">
+              <Input type="number" value={form.freight} onChange={(e) => set("freight", e.target.value)} />
+            </F>
+            <F label="Packaging Fee"><Input type="number" value={form.packaging_fee} onChange={(e) => set("packaging_fee", e.target.value)} /></F>
+            <F label="TAX"><Input type="number" value={form.tax} onChange={(e) => set("tax", e.target.value)} /></F>
+            <F label="Local Freight"><Input type="number" value={form.local_freight} onChange={(e) => set("local_freight", e.target.value)} /></F>
+          </div>
+          <div className="space-y-4">
+            <F label="Insurance (auto: 0.03% of Value of Goods)">
+              <Input type="number" value={insurance.toFixed(2)} readOnly className="bg-muted" />
+            </F>
+            <F label="Bill Charge"><Input type="number" value={form.bill_charge} onChange={(e) => set("bill_charge", e.target.value)} /></F>
+            <F label="Loading Fee"><Input type="number" value={form.loading_fee} onChange={(e) => set("loading_fee", e.target.value)} /></F>
+            <F label="Unloading Fee"><Input type="number" value={form.unloading_fee} onChange={(e) => set("unloading_fee", e.target.value)} /></F>
+            <F label="Payment of Goods"><Input type="number" value={form.payment_of_goods} onChange={(e) => set("payment_of_goods", e.target.value)} /></F>
+            <F label="Value of Goods"><Input type="number" value={form.value_of_goods} onChange={(e) => set("value_of_goods", e.target.value)} /></F>
+          </div>
+          <div className="space-y-4">
+            <F label="Goods Advance"><Input type="number" value={form.goods_advance} onChange={(e) => set("goods_advance", e.target.value)} /></F>
+            <F label="Payment Amount"><Input type="number" value={form.payment_amount} onChange={(e) => set("payment_amount", e.target.value)} /></F>
+            <F label="Payment Status">
+              <Select value={form.payment_status} onValueChange={(v) => set("payment_status", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Unpaid">Unpaid</SelectItem>
+                  <SelectItem value="Partial">Partial</SelectItem>
+                  <SelectItem value="Paid">Paid</SelectItem>
+                </SelectContent>
+              </Select>
+            </F>
 
             <div className="rounded-xl bg-gradient-primary p-5 text-primary-foreground shadow-elegant">
               <div className="text-lg font-bold">Summary</div>
