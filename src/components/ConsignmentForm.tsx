@@ -175,6 +175,7 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
             </F>
             <F label="Freight (auto: rate × CBM/Weight)">
               <Input type="number" value={Number(form.freight || 0)} readOnly className="bg-muted" />
+            </F>
             <F label="Packaging Fee"><Input type="number" value={form.packaging_fee} onChange={(e) => set("packaging_fee", e.target.value)} /></F>
             <F label="TAX"><Input type="number" value={form.tax} onChange={(e) => set("tax", e.target.value)} /></F>
             <F label="Local Freight"><Input type="number" value={form.local_freight} onChange={(e) => set("local_freight", e.target.value)} /></F>
