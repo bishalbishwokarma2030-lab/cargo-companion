@@ -171,10 +171,10 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
               </Select>
             </F>
             <F label="Calculation Rate (auto from station)">
-              <Input type="number" value={form.calculation_rate} onChange={(e) => set("calculation_rate", e.target.value)} />
+              <Input type="number" value={Number(form.calculation_rate || 0)} readOnly className="bg-muted" />
             </F>
             <F label="Freight (auto: rate × CBM/Weight)">
-              <Input type="number" value={form.freight} onChange={(e) => set("freight", e.target.value)} />
+              <Input type="number" value={Number(form.freight || 0)} readOnly className="bg-muted" />
             </F>
             <F label="Packaging Fee"><Input type="number" value={form.packaging_fee} onChange={(e) => set("packaging_fee", e.target.value)} /></F>
             <F label="TAX"><Input type="number" value={form.tax} onChange={(e) => set("tax", e.target.value)} /></F>
