@@ -36,57 +36,65 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
     signature: receivedBy,
   };
 
+  // Render at native 1578×997, then scale down to fit container width (max 900px).
+  const NATIVE_W = 1578;
+  const NATIVE_H = 997;
+  const TARGET_W = 900;
+  const scale = TARGET_W / NATIVE_W;
+
   return (
     <div className="overflow-auto">
       <div
         className="relative mx-auto font-sans text-black"
-        style={{
-          width: "min(100%, 900px)",
-          aspectRatio: "1578 / 997",
-        }}
+        style={{ width: `${TARGET_W}px`, height: `${NATIVE_H * scale}px` }}
       >
         <div
           className="absolute left-0 top-0 origin-top-left"
           style={{
-            width: "1578px",
-            height: "997px",
-            transform: "scale(calc(min(100%, 900px) / 1578px))",
+            width: `${NATIVE_W}px`,
+            height: `${NATIVE_H}px`,
+            transform: `scale(${scale})`,
           }}
         >
-        <img src={receiptTemplate} alt="Consignment receipt template" className="absolute inset-0 h-full w-full select-none object-contain" draggable={false} />
+          <img
+            src={receiptTemplate}
+            alt="Consignment receipt template"
+            className="absolute inset-0 h-full w-full select-none"
+            draggable={false}
+          />
 
-        <FillText className="left-[288px] top-[198px] w-[460px] text-[17px] font-semibold tracking-[0.2px]" value={text.billNo} />
-        <FillText className="left-[284px] top-[278px] w-[464px] text-[17px] font-semibold" value={text.startDate} />
-        <FillText className="left-[286px] top-[357px] w-[463px] text-[17px] font-semibold" value={text.marka} />
+          <FillText className="left-[288px] top-[210px] w-[460px] text-[17px] font-semibold tracking-[0.2px]" value={text.billNo} />
+          <FillText className="left-[284px] top-[290px] w-[464px] text-[17px] font-semibold" value={text.startDate} />
+          <FillText className="left-[286px] top-[369px] w-[463px] text-[17px] font-semibold" value={text.marka} />
 
-        <FillText className="left-[755px] top-[156px] w-[300px] text-center text-[24px] font-bold text-[#2ea24f]" value={text.station} />
-        <FillText className="left-[1062px] top-[198px] w-[493px] text-center text-[24px] font-bold text-[#2ea24f]" value={text.station} />
-        <FillText className="left-[1061px] top-[278px] w-[495px] text-center text-[19px] font-semibold" value={text.destination} />
-        <FillText className="left-[1061px] top-[357px] w-[495px] text-center text-[18px] font-semibold" value={text.phone} />
+          <FillText className="left-[1062px] top-[210px] w-[493px] text-[24px] font-bold text-[#2ea24f]" value={text.station} />
+          <FillText className="left-[1061px] top-[290px] w-[495px] text-[19px] font-semibold" value={text.destination} />
+          <FillText className="left-[1061px] top-[369px] w-[495px] text-[18px] font-semibold" value={text.phone} />
 
-        <FillText className="left-[4px] top-[510px] w-[274px] px-[6px] text-center text-[17px] font-semibold" value={text.description} />
-        <FillText className="left-[278px] top-[510px] w-[101px] text-center text-[17px] font-semibold" value={text.packageType} />
-        <FillText className="left-[379px] top-[510px] w-[110px] text-center text-[17px] font-semibold" value={text.quantity} />
-        <FillText className="left-[489px] top-[510px] w-[107px] text-center text-[17px] font-semibold" value={text.ctnNo} />
-        <FillText className="left-[596px] top-[510px] w-[158px] text-center text-[17px] font-semibold" value={text.packagingFee} />
-        <FillText className="left-[754px] top-[510px] w-[87px] text-center text-[17px] font-semibold" value={text.loadingFee} />
-        <FillText className="left-[841px] top-[510px] w-[113px] text-center text-[17px] font-semibold" value={text.unloadingFee} />
-        <FillText className="left-[954px] top-[510px] w-[102px] text-center text-[17px] font-semibold" value={text.cbm} />
-        <FillText className="left-[1056px] top-[510px] w-[153px] text-center text-[17px] font-semibold" value={text.weight} />
-        <FillText className="left-[1209px] top-[510px] w-[112px] text-center text-[17px] font-semibold" value={text.tax} />
-        <FillText className="left-[1321px] top-[510px] w-[99px] text-center text-[17px] font-semibold" value={text.freight} />
-        <FillText className="left-[1420px] top-[510px] w-[157px] text-center text-[17px] font-semibold" value={text.localFreight} />
+          <FillText className="left-[4px] top-[522px] w-[274px] text-[17px] font-semibold" value={text.description} />
+          <FillText className="left-[278px] top-[522px] w-[101px] text-[17px] font-semibold" value={text.packageType} />
+          <FillText className="left-[379px] top-[522px] w-[110px] text-[17px] font-semibold" value={text.quantity} />
+          <FillText className="left-[489px] top-[522px] w-[107px] text-[17px] font-semibold" value={text.ctnNo} />
+          <FillText className="left-[596px] top-[522px] w-[158px] text-[17px] font-semibold" value={text.packagingFee} />
+          <FillText className="left-[754px] top-[522px] w-[87px] text-[17px] font-semibold" value={text.loadingFee} />
+          <FillText className="left-[841px] top-[522px] w-[113px] text-[17px] font-semibold" value={text.unloadingFee} />
+          <FillText className="left-[954px] top-[522px] w-[102px] text-[17px] font-semibold" value={text.cbm} />
+          <FillText className="left-[1056px] top-[522px] w-[153px] text-[17px] font-semibold" value={text.weight} />
+          <FillText className="left-[1209px] top-[522px] w-[112px] text-[17px] font-semibold" value={text.tax} />
+          <FillText className="left-[1321px] top-[522px] w-[99px] text-[17px] font-semibold" value={text.freight} />
+          <FillText className="left-[1420px] top-[522px] w-[157px] text-[17px] font-semibold" value={text.localFreight} />
 
-        <FillText className="left-[0px] top-[620px] w-[278px] text-center text-[17px] font-semibold" value={text.valueOfGoods} />
-        <FillText className="left-[278px] top-[620px] w-[212px] text-center text-[17px] font-semibold" value={text.insurance} />
-        <FillText className="left-[490px] top-[620px] w-[264px] text-center text-[17px] font-semibold" value={text.billCharge} />
-        <FillText className="left-[754px] top-[620px] w-[301px] text-center text-[17px] font-semibold" value={text.advance} />
-        <FillText className="left-[1055px] top-[620px] w-[152px] text-center text-[18px] font-bold" value={text.total} />
-        <FillText className="left-[1207px] top-[620px] w-[214px] text-center text-[17px] font-semibold" value={text.freightOnDelivery} />
-        <FillText className="left-[1421px] top-[620px] w-[157px] text-center text-[17px] font-semibold" value={text.tradeMode} />
+          <FillText className="left-[0px] top-[632px] w-[278px] text-[17px] font-semibold" value={text.valueOfGoods} />
+          <FillText className="left-[278px] top-[632px] w-[212px] text-[17px] font-semibold" value={text.insurance} />
+          <FillText className="left-[490px] top-[632px] w-[264px] text-[17px] font-semibold" value={text.billCharge} />
+          <FillText className="left-[754px] top-[632px] w-[301px] text-[17px] font-semibold" value={text.advance} />
+          <FillText className="left-[1055px] top-[632px] w-[152px] text-[18px] font-bold" value={text.total} />
+          <FillText className="left-[1207px] top-[632px] w-[214px] text-[17px] font-semibold" value={text.freightOnDelivery} />
+          <FillText className="left-[1421px] top-[632px] w-[157px] text-[17px] font-semibold" value={text.tradeMode} />
 
-        <FillText className="left-[279px] top-[701px] w-[777px] px-[12px] text-[16px] font-semibold leading-[1.15]" value={text.remarks} />
-        <FillText className="left-[1205px] top-[701px] w-[373px] text-center text-[18px] font-medium" value={text.signature} />
+          <FillText className="left-[279px] top-[713px] w-[777px] text-[16px] font-semibold leading-[1.15]" value={text.remarks} />
+          <FillText className="left-[1205px] top-[713px] w-[373px] text-[18px] font-medium" value={text.signature} />
+        </div>
       </div>
     </div>
   );
@@ -94,8 +102,7 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
 
 function FillText({ className, value }: { className: string; value: string }) {
   if (!value) return null;
-
-  return <div className={`absolute leading-none ${className}`}>{value}</div>;
+  return <div className={`absolute text-center leading-none ${className}`}>{value}</div>;
 }
 
 function formatAmount(value: number | string | null | undefined) {
