@@ -48,6 +48,7 @@ export type Database = {
           client_phone: string | null
           created_at: string
           ctn_no: string | null
+          current_station: string | null
           description: string | null
           end_station: string
           expected_delivery_date: string | null
@@ -64,6 +65,7 @@ export type Database = {
           packaging_fee: number | null
           payment_amount: number | null
           payment_of_goods: number | null
+          payment_status: string | null
           quantity: number | null
           remarks: string | null
           serial_prefix: string | null
@@ -90,6 +92,7 @@ export type Database = {
           client_phone?: string | null
           created_at?: string
           ctn_no?: string | null
+          current_station?: string | null
           description?: string | null
           end_station: string
           expected_delivery_date?: string | null
@@ -106,6 +109,7 @@ export type Database = {
           packaging_fee?: number | null
           payment_amount?: number | null
           payment_of_goods?: number | null
+          payment_status?: string | null
           quantity?: number | null
           remarks?: string | null
           serial_prefix?: string | null
@@ -132,6 +136,7 @@ export type Database = {
           client_phone?: string | null
           created_at?: string
           ctn_no?: string | null
+          current_station?: string | null
           description?: string | null
           end_station?: string
           expected_delivery_date?: string | null
@@ -148,6 +153,7 @@ export type Database = {
           packaging_fee?: number | null
           payment_amount?: number | null
           payment_of_goods?: number | null
+          payment_status?: string | null
           quantity?: number | null
           remarks?: string | null
           serial_prefix?: string | null
