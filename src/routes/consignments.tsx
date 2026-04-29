@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Plus, Search, Printer } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Plus, Search, Printer, Copy, Download, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { toPng } from "html-to-image";
 import { PageHeader } from "@/components/PageHeader";
 import { DataTable } from "@/components/DataTable";
 import { ActionButtons } from "@/components/ActionButtons";
