@@ -131,7 +131,7 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>
       </div>
     </div>
   );
-}
+});
 
 function FillText({ className, value }: { className: string; value: string }) {
   if (!value) return null;
