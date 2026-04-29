@@ -1,7 +1,8 @@
+import { forwardRef } from "react";
 import receiptTemplate from "@/assets/consignment-receipt-template-blank.jpg";
 import { Consignment } from "@/lib/store";
 
-export function ConsignmentReceipt({ c }: { c: Consignment }) {
+export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>(function ConsignmentReceipt({ c }, ref) {
   const isGuangzhou = (c.start_station || "").toLowerCase().includes("guangzhou");
   const isYiwu = (c.start_station || "").toLowerCase().includes("yiwu");
   const stationLabel = isGuangzhou ? "Guangzhou" : isYiwu ? "Yiwu" : c.start_station;
