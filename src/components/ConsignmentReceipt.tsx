@@ -1,7 +1,8 @@
+import { forwardRef } from "react";
 import receiptTemplate from "@/assets/consignment-receipt-template-blank.jpg";
 import { Consignment } from "@/lib/store";
 
-export function ConsignmentReceipt({ c }: { c: Consignment }) {
+export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>(function ConsignmentReceipt({ c }, ref) {
   const isGuangzhou = (c.start_station || "").toLowerCase().includes("guangzhou");
   const isYiwu = (c.start_station || "").toLowerCase().includes("yiwu");
   const stationLabel = isGuangzhou ? "Guangzhou" : isYiwu ? "Yiwu" : c.start_station;
@@ -48,9 +49,9 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
   const scale = TARGET_W / NATIVE_W;
 
   return (
-    <div className="overflow-auto">
+    <div className="overflow-auto" ref={ref}>
       <div
-        className="relative mx-auto font-sans text-black"
+        className="relative mx-auto font-sans text-black bg-white"
         style={{ width: `${TARGET_W}px`, height: `${NATIVE_H * scale}px` }}
       >
         <div
@@ -102,22 +103,22 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
           <FillText className="left-[1206px] top-[608px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
           <FillText className="left-[1421px] top-[608px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
 
-          {/* Total amount in words — fits inside the REMARKS box next to the label */}
+          {/* Total amount in words — sits inside the box, below the "TOTAL AMOUNT IN WORDS" label */}
           {text.totalWords && (
-            <div className="absolute left-[279px] top-[722px] w-[920px] text-[15px] font-semibold text-left leading-[1.1]">
+            <div className="absolute left-[10px] top-[700px] w-[760px] text-[16px] font-semibold text-center leading-[1.1]">
               {text.totalWords}
             </div>
           )}
 
-          {/* REMARKS field row */}
-          <FillText className="left-[279px] top-[718px] w-[920px] text-[15px] font-medium leading-[1.15] text-left" value={text.remarks} />
+          {/* REMARKS field — sits inside the REMARKS box (label is at ~left 0-200, box continues to ~770) */}
+          <FillText className="left-[10px] top-[760px] w-[760px] text-[15px] font-medium leading-[1.15]" value={text.remarks} />
 
-          {/* Signature — placed below the SIGNATURE label */}
-          <FillText className="left-[1205px] top-[760px] w-[373px] text-[18px] font-medium" value={text.signature} />
+          {/* Signature — placed in the bottom-right stamp area, near the round seal */}
+          <FillText className="left-[1310px] top-[720px] w-[230px] text-[18px] font-bold text-[#000]" value={text.signature} />
 
-          {/* Starting station name only — top middle, just below contact info */}
+          {/* Starting station name — top middle, below the email line, larger */}
           {text.station && (
-            <div className="absolute left-[640px] top-[135px] w-[300px] text-[16px] font-bold text-[#2ea24f] text-center">
+            <div className="absolute left-[560px] top-[155px] w-[460px] text-[28px] font-extrabold text-[#2ea24f] text-center leading-none">
               {text.station}
             </div>
           )}
@@ -130,7 +131,7 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
       </div>
     </div>
   );
-}
+});
 
 function FillText({ className, value }: { className: string; value: string }) {
   if (!value) return null;

@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Plus, Search, Printer } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Plus, Search, Printer, Copy, Download, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { toPng } from "html-to-image";
 import { PageHeader } from "@/components/PageHeader";
 import { DataTable } from "@/components/DataTable";
 import { ActionButtons } from "@/components/ActionButtons";
@@ -21,6 +22,37 @@ function ConsignmentsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Consignment | null>(null);
   const [viewing, setViewing] = useState<Consignment | null>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
+
+  const renderReceiptPng = async () => {
+    if (!receiptRef.current) throw new Error("Receipt not ready");
+    return await toPng(receiptRef.current, { pixelRatio: 2, cacheBust: true, backgroundColor: "#ffffff" });
+  };
+
+  const downloadReceipt = async () => {
+    try {
+      const dataUrl = await renderReceiptPng();
+      const link = document.createElement("a");
+      link.download = `consignment-${viewing?.bill_no || "receipt"}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success("Downloaded");
+    } catch (e: any) { toast.error(e.message || "Download failed"); }
+  };
+
+  const copyReceipt = async () => {
+    try {
+      const dataUrl = await renderReceiptPng();
+      const blob = await (await fetch(dataUrl)).blob();
+      // @ts-ignore - ClipboardItem is widely supported
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      toast.success("Copied to clipboard");
+    } catch (e: any) { toast.error(e.message || "Copy failed"); }
+  };
+
+  const editReceipt = () => {
+    if (viewing) { setEditing(viewing); setViewing(null); setFormOpen(true); }
+  };
 
   const load = () => api.consignments.list().then(setItems).catch((e) => toast.error(e.message));
   useEffect(() => { load(); }, []);
@@ -87,12 +119,17 @@ function ConsignmentsPage() {
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4">
           <DialogHeader>
-            <div className="flex items-center justify-between pr-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
               <DialogTitle>Consignment Receipt</DialogTitle>
-              <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="mr-1 h-4 w-4" />Print</Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={copyReceipt}><Copy className="mr-1 h-4 w-4" />Copy</Button>
+                <Button size="sm" variant="outline" onClick={downloadReceipt}><Download className="mr-1 h-4 w-4" />Download</Button>
+                <Button size="sm" variant="outline" onClick={editReceipt}><Pencil className="mr-1 h-4 w-4" />Edit</Button>
+                <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="mr-1 h-4 w-4" />Print</Button>
+              </div>
             </div>
           </DialogHeader>
-          {viewing && <ConsignmentReceipt c={viewing} />}
+          {viewing && <ConsignmentReceipt ref={receiptRef} c={viewing} />}
         </DialogContent>
       </Dialog>
     </div>
