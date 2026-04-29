@@ -49,9 +49,9 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>
   const scale = TARGET_W / NATIVE_W;
 
   return (
-    <div className="overflow-auto">
+    <div className="overflow-auto" ref={ref}>
       <div
-        className="relative mx-auto font-sans text-black"
+        className="relative mx-auto font-sans text-black bg-white"
         style={{ width: `${TARGET_W}px`, height: `${NATIVE_H * scale}px` }}
       >
         <div
