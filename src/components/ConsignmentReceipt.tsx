@@ -189,7 +189,7 @@ function numberToWords(num: number): string {
   }
 
   let words = toWords(whole);
-  if (cents > 0) words += ` and ${cents}/100`;
+  // integer-only totals: no fractional suffix
   words += " Only";
   return (negative ? "Negative " : "") + words;
 }
