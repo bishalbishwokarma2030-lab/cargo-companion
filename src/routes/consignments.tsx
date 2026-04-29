@@ -22,6 +22,37 @@ function ConsignmentsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Consignment | null>(null);
   const [viewing, setViewing] = useState<Consignment | null>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
+
+  const renderReceiptPng = async () => {
+    if (!receiptRef.current) throw new Error("Receipt not ready");
+    return await toPng(receiptRef.current, { pixelRatio: 2, cacheBust: true, backgroundColor: "#ffffff" });
+  };
+
+  const downloadReceipt = async () => {
+    try {
+      const dataUrl = await renderReceiptPng();
+      const link = document.createElement("a");
+      link.download = `consignment-${viewing?.bill_no || "receipt"}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success("Downloaded");
+    } catch (e: any) { toast.error(e.message || "Download failed"); }
+  };
+
+  const copyReceipt = async () => {
+    try {
+      const dataUrl = await renderReceiptPng();
+      const blob = await (await fetch(dataUrl)).blob();
+      // @ts-ignore - ClipboardItem is widely supported
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      toast.success("Copied to clipboard");
+    } catch (e: any) { toast.error(e.message || "Copy failed"); }
+  };
+
+  const editReceipt = () => {
+    if (viewing) { setEditing(viewing); setViewing(null); setFormOpen(true); }
+  };
 
   const load = () => api.consignments.list().then(setItems).catch((e) => toast.error(e.message));
   useEffect(() => { load(); }, []);
