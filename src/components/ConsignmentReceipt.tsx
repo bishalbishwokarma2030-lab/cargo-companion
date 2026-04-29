@@ -103,18 +103,20 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>
           <FillText className="left-[1206px] top-[608px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
           <FillText className="left-[1421px] top-[608px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
 
-          {/* Total amount in words — sits inside the UPPER "TOTAL AMOUNT IN WORDS" row, centered */}
+          {/* Total amount in words — centered inside the upper value box only */}
           {text.totalWords && (
-            <div className="absolute left-[200px] top-[660px] w-[1180px] text-[18px] font-bold text-center leading-[1.1]">
+            <div className="absolute left-[278px] top-[640px] flex h-[43px] w-[1298px] items-center justify-center px-6 text-center text-[18px] font-bold leading-none text-black">
               {text.totalWords}
             </div>
           )}
 
-          {/* REMARKS field — sits inside the lower REMARKS box, centered */}
-          <FillText className="left-[200px] top-[718px] w-[1180px] text-[15px] font-medium leading-[1.15]" value={text.remarks} />
+          {/* REMARKS field — centered only inside the remarks box */}
+          <div className="absolute left-[278px] top-[684px] flex h-[53px] w-[777px] items-center justify-center px-4 text-center text-[15px] font-medium leading-tight text-black">
+            {text.remarks}
+          </div>
 
-          {/* Signature — placed inside the right signature box (right cell), vertically & horizontally centered */}
-          <div className="absolute left-[1376px] top-[700px] w-[202px] h-[60px] flex items-center justify-center text-[18px] font-bold text-black">
+          {/* Signature — centered inside the far-right signature value box */}
+          <div className="absolute left-[1206px] top-[684px] flex h-[53px] w-[370px] items-center justify-center px-4 text-center text-[18px] font-bold leading-none text-black">
             {text.signature}
           </div>
 
@@ -125,12 +127,10 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>
             </div>
           )}
 
-          {/* Right-edge vertical border continuation for the signature box */}
-          <div className="absolute left-[1576px] top-[640px] h-[120px] w-[2px] bg-black" />
-          {/* Left vertical divider for the signature value column */}
-          <div className="absolute left-[1376px] top-[700px] h-[60px] w-[2px] bg-black" />
-          {/* Bottom border of signature box */}
-          <div className="absolute left-[1376px] top-[758px] h-[2px] w-[202px] bg-black" />
+          {/* Signature table line fixes for the right-side value box */}
+          <div className="absolute left-[1206px] top-[683px] h-[54px] w-[2px] bg-black" />
+          <div className="absolute left-[1576px] top-[683px] h-[54px] w-[2px] bg-black" />
+          <div className="absolute left-[1206px] top-[736px] h-[2px] w-[370px] bg-black" />
         </div>
       </div>
     </div>
