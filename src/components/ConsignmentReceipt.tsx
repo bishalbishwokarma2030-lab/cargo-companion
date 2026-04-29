@@ -92,25 +92,35 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
           <FillText className="left-[1321px] top-[522px] w-[99px] text-[17px] font-semibold" value={text.freight} />
           <FillText className="left-[1420px] top-[522px] w-[157px] text-[17px] font-semibold" value={text.localFreight} />
 
-          {/* Money row — column boundaries: 0,277,488,752,1055,1206,1421,1576 */}
-          <FillText className="left-[0px] top-[632px] w-[277px] text-[17px] font-semibold" value={text.valueOfGoods} />
-          <FillText className="left-[277px] top-[632px] w-[211px] text-[17px] font-semibold" value={text.insurance} />
-          <FillText className="left-[488px] top-[632px] w-[264px] text-[17px] font-semibold" value={text.billCharge} />
-          <FillText className="left-[752px] top-[632px] w-[303px] text-[17px] font-semibold" value={text.advance} />
+          {/* Money row — column boundaries: 0,277,488,752,1055,1206,1421,1576. Values sit just under headers (~605px) */}
+          <FillText className="left-[0px] top-[608px] w-[277px] text-[17px] font-semibold" value={text.valueOfGoods} />
+          <FillText className="left-[277px] top-[608px] w-[211px] text-[17px] font-semibold" value={text.insurance} />
+          <FillText className="left-[488px] top-[608px] w-[264px] text-[17px] font-semibold" value={text.billCharge} />
+          <FillText className="left-[752px] top-[608px] w-[303px] text-[17px] font-semibold" value={text.advance} />
           {/* TOTAL AMOUNT — red */}
-          <FillText className="left-[1055px] top-[632px] w-[151px] text-[18px] font-bold text-[#e11d1d]" value={text.total} />
-          <FillText className="left-[1206px] top-[632px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
-          <FillText className="left-[1421px] top-[632px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
+          <FillText className="left-[1055px] top-[608px] w-[151px] text-[18px] font-bold text-[#e11d1d]" value={text.total} />
+          <FillText className="left-[1206px] top-[608px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
+          <FillText className="left-[1421px] top-[608px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
 
-          {/* Total amount in words — left-aligned, fills the long row */}
+          {/* Total amount in words — sits on the REMARKS row, after the "TOTAL AMOUNT IN WORDS" label */}
           {text.totalWords && (
-            <div className="absolute left-[280px] top-[688px] w-[1290px] text-[16px] font-semibold text-left leading-none">
+            <div className="absolute left-[280px] top-[682px] w-[920px] text-[16px] font-semibold text-left leading-none">
               {text.totalWords}
             </div>
           )}
 
-          <FillText className="left-[279px] top-[713px] w-[777px] text-[16px] font-semibold leading-[1.15]" value={text.remarks} />
-          <FillText className="left-[1205px] top-[745px] w-[373px] text-[18px] font-medium" value={text.signature} />
+          {/* REMARKS field row */}
+          <FillText className="left-[279px] top-[718px] w-[920px] text-[15px] font-medium leading-[1.15] text-left" value={text.remarks} />
+
+          {/* Signature — placed below the SIGNATURE label */}
+          <FillText className="left-[1205px] top-[760px] w-[373px] text-[18px] font-medium" value={text.signature} />
+
+          {/* Starting station mention next to email/contact area (top middle) */}
+          {text.station && (
+            <div className="absolute left-[640px] top-[120px] w-[300px] text-[14px] font-bold text-[#2ea24f] text-center">
+              Starting Station: {text.station}
+            </div>
+          )}
 
           {/* Missing right-side bottom border under signature box (template ends at x=1204) */}
           <div className="absolute left-[1204px] top-[736px] h-[2px] w-[374px] bg-black" />
