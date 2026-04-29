@@ -103,18 +103,18 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>
           <FillText className="left-[1206px] top-[608px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
           <FillText className="left-[1421px] top-[608px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
 
-          {/* Total amount in words — sits inside the UPPER "TOTAL AMOUNT IN WORDS" box, centered */}
+          {/* Total amount in words — sits inside the UPPER "TOTAL AMOUNT IN WORDS" row, centered */}
           {text.totalWords && (
-            <div className="absolute left-[200px] top-[688px] w-[1000px] text-[18px] font-bold text-center leading-[1.1]">
+            <div className="absolute left-[200px] top-[660px] w-[1180px] text-[18px] font-bold text-center leading-[1.1]">
               {text.totalWords}
             </div>
           )}
 
           {/* REMARKS field — sits inside the lower REMARKS box, centered */}
-          <FillText className="left-[200px] top-[748px] w-[1000px] text-[15px] font-medium leading-[1.15]" value={text.remarks} />
+          <FillText className="left-[200px] top-[718px] w-[1180px] text-[15px] font-medium leading-[1.15]" value={text.remarks} />
 
-          {/* Signature — placed in the bottom-right stamp area, centered in its box */}
-          <FillText className="left-[1380px] top-[748px] w-[196px] text-[18px] font-bold text-[#000]" value={text.signature} />
+          {/* Signature — placed inside the right signature box, centered */}
+          <FillText className="left-[1380px] top-[718px] w-[196px] text-[18px] font-bold text-[#000]" value={text.signature} />
 
           {/* Starting station name — top middle, below the email line, larger */}
           {text.station && (
@@ -123,10 +123,12 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>
             </div>
           )}
 
-          {/* Right-edge vertical border continuation for the signature box (fills the small gap) */}
-          <div className="absolute left-[1576px] top-[670px] h-[110px] w-[2px] bg-black" />
-          {/* Top border continuation for the signature row right side */}
-          <div className="absolute left-[1376px] top-[670px] h-[2px] w-[202px] bg-black" />
+          {/* Right-edge vertical border continuation for the signature box */}
+          <div className="absolute left-[1576px] top-[640px] h-[120px] w-[2px] bg-black" />
+          {/* Left vertical divider for the signature value column */}
+          <div className="absolute left-[1376px] top-[700px] h-[60px] w-[2px] bg-black" />
+          {/* Bottom border of signature box */}
+          <div className="absolute left-[1376px] top-[758px] h-[2px] w-[202px] bg-black" />
         </div>
       </div>
     </div>
