@@ -7,7 +7,7 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
   const stationLabel = isGuangzhou ? "Guangzhou" : isYiwu ? "Yiwu" : c.start_station;
   const receivedBy = isGuangzhou ? "Ken Guangzhou" : isYiwu ? "Yiwu Su" : "";
 
-  const totalAmountNum = Number(c.grand_total || 0);
+  const totalAmountNum = Math.trunc(Number(c.grand_total || 0));
   const totalInWords = numberToWords(totalAmountNum);
 
   const text = {
@@ -31,7 +31,7 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
     insurance: formatAmount(c.insurance),
     billCharge: formatAmount(c.bill_charge),
     advance: formatAmount(c.advance_amount),
-    total: formatAmount(c.grand_total),
+    total: String(Math.trunc(Number(c.grand_total || 0)) || ""),
     totalWords: totalInWords,
     freightOnDelivery: formatAmount(c.payment_of_goods),
     tradeMode: c.trade_mode || "",
@@ -102,9 +102,9 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
           <FillText className="left-[1206px] top-[608px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
           <FillText className="left-[1421px] top-[608px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
 
-          {/* Total amount in words — sits on the REMARKS row, after the "TOTAL AMOUNT IN WORDS" label */}
+          {/* Total amount in words — fits inside the REMARKS box next to the label */}
           {text.totalWords && (
-            <div className="absolute left-[280px] top-[682px] w-[920px] text-[16px] font-semibold text-left leading-none">
+            <div className="absolute left-[279px] top-[722px] w-[920px] text-[15px] font-semibold text-left leading-[1.1]">
               {text.totalWords}
             </div>
           )}
@@ -115,10 +115,10 @@ export function ConsignmentReceipt({ c }: { c: Consignment }) {
           {/* Signature — placed below the SIGNATURE label */}
           <FillText className="left-[1205px] top-[760px] w-[373px] text-[18px] font-medium" value={text.signature} />
 
-          {/* Starting station mention next to email/contact area (top middle) */}
+          {/* Starting station name only — top middle, just below contact info */}
           {text.station && (
-            <div className="absolute left-[640px] top-[120px] w-[300px] text-[14px] font-bold text-[#2ea24f] text-center">
-              Starting Station: {text.station}
+            <div className="absolute left-[640px] top-[135px] w-[300px] text-[16px] font-bold text-[#2ea24f] text-center">
+              {text.station}
             </div>
           )}
 
