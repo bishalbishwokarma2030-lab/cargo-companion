@@ -113,8 +113,10 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment }>
           {/* REMARKS field — sits inside the lower REMARKS box, centered */}
           <FillText className="left-[200px] top-[718px] w-[1180px] text-[15px] font-medium leading-[1.15]" value={text.remarks} />
 
-          {/* Signature — placed inside the right signature box, centered */}
-          <FillText className="left-[1380px] top-[718px] w-[196px] text-[18px] font-bold text-[#000]" value={text.signature} />
+          {/* Signature — placed inside the right signature box (right cell), vertically & horizontally centered */}
+          <div className="absolute left-[1376px] top-[700px] w-[202px] h-[60px] flex items-center justify-center text-[18px] font-bold text-black">
+            {text.signature}
+          </div>
 
           {/* Starting station name — top middle, below the email line, larger */}
           {text.station && (
